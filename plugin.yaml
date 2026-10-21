@@ -1,0 +1,39 @@
+name: ooda
+version: 1.0.0
+manifest_version: 2
+api_version: 1
+license: MIT
+description: >
+  John Boyd's OODA loop as a working system. Ships the nine Boyd prompts as
+  bundled skills, loop-state tools that keep Observe/Orient/Decide/Act on
+  disk, slash commands, a pre_llm_call hook that keeps the active loop in
+  context, and a desktop pane. Orientation sits at the center, where Boyd
+  put it — not "be faster".
+tags: [ooda, boyd, strategy, decision-making, skills, desktop, productivity]
+provides_tools:
+  - ooda_start
+  - ooda_prompt
+  - ooda_record
+  - ooda_status
+  - ooda_move
+  - ooda_list
+provides_hooks:
+  - pre_llm_call
+config_schema:
+  inject_active_loop:
+    type: bool
+    default: true
+    label: Inject the active loop into every turn
+    description: >
+      When a loop is open, prepend its situation, current stage, and latest
+      orientation to the user message so the model stays oriented.
+  default_arena:
+    type: str
+    default: ""
+    label: Default arena
+    description: Optional default competitive arena used when ooda_start is called without one.
+  max_inject_chars:
+    type: int
+    default: 1200
+    label: Injection budget (chars)
+    description: Cap on the injected loop context per turn.

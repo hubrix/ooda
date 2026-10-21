@@ -1,0 +1,13 @@
+[project]
+name = "hermes-plugin-ooda"
+version = "1.0.0"
+description = "John Boyd's OODA loop as a Hermes plugin — skills, loop-state tools, slash commands, and a desktop pane."
+requires-python = ">=3.11"
+license = { text = "MIT" }
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/hubrix/ooda"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

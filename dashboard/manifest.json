@@ -1,0 +1,10 @@
+{
+  "name": "ooda",
+  "label": "OODA",
+  "description": "John Boyd's OODA loop — loops, stages, and the nine Boyd prompts",
+  "icon": "Zap",
+  "version": "1.0.0",
+  "tab": { "path": "/ooda", "position": "after:skills" },
+  "entry": "dist/index.js",
+  "api": "plugin_api.py"
+}
