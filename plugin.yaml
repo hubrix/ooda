@@ -4,11 +4,13 @@ manifest_version: 2
 api_version: 1
 license: MIT
 description: >
-  John Boyd's OODA loop as a working system. Ships the nine Boyd prompts as
-  bundled skills, loop-state tools that keep Observe/Orient/Decide/Act on
-  disk, slash commands, a pre_llm_call hook that keeps the active loop in
-  context, and a desktop pane. Orientation sits at the center, where Boyd
-  put it — not "be faster".
+  John Boyd's OODA loop as a working system, portable across agents. Ships the
+  nine Boyd prompts as bundled skills, loop-state tools that keep
+  Observe/Orient/Decide/Act on disk, slash commands, a pre_llm_call hook that
+  keeps the active loop in context, and a desktop pane. Also exposes the same
+  tools over a stdlib stdio MCP server so Claude Code, Codex CLI, and any other
+  MCP client get the identical surface. Orientation sits at the center, where
+  Boyd put it — not "be faster".
 tags: [ooda, boyd, strategy, decision-making, skills, desktop, productivity]
 provides_tools:
   - ooda_start

@@ -143,6 +143,68 @@ metadata:
 
     print(f"wrote {len(prompts.ORDER) + 1} skills to {SKILLS}")
 
+    build_agent_commands()
+
+
+CLAUDE_CMDS = PLUGIN_DIR / "agents" / "claude" / "commands"
+CODEX_PROMPTS = PLUGIN_DIR / "agents" / "codex" / "prompts"
+
+HUB_CMD = """---
+description: OODA loop — status, list, close, or start a loop on a situation
+argument-hint: [situation | status | list | close <id>]
+---
+
+Use the `ooda` MCP tools.
+
+- No argument or `status`: call `ooda_status` and report the active loop.
+- `list`: call `ooda_list`.
+- `close <id>`: call `ooda_move` if you have a decision, else report the loop.
+- Anything else: treat it as a situation, call `ooda_start`, then run the
+  Observe prompt it returns.
+
+$ARGUMENTS
+"""
+
+
+def build_agent_commands() -> None:
+    """Emit Claude Code slash commands and Codex custom prompts."""
+    CLAUDE_CMDS.mkdir(parents=True, exist_ok=True)
+    CODEX_PROMPTS.mkdir(parents=True, exist_ok=True)
+
+    (CLAUDE_CMDS / "ooda.md").write_text(HUB_CMD, encoding="utf-8")
+    (CODEX_PROMPTS / "ooda.md").write_text(HUB_CMD, encoding="utf-8")
+
+    for key in prompts.ORDER:
+        rec = prompts.PROMPTS[key]
+        slash = SLASH[key]
+        why = rec["why"].replace('"', "'")
+        why = why[:110].rsplit(" ", 1)[0]
+
+        claude = f"""---
+description: Boyd's {rec['title']} ({rec['stage']} stage)
+argument-hint: [situation]
+---
+
+Call `ooda_prompt` with key="{key}" and situation="$ARGUMENTS" (or the active
+loop's situation if no argument). Then run the returned prompt in full.
+
+Record the findings with `ooda_record` at stage "{rec['stage']}" before moving on.
+"""
+        (CLAUDE_CMDS / f"ooda-{slash}.md").write_text(claude, encoding="utf-8")
+
+        codex = f"""# Boyd's {rec['title']} ({rec['stage']} stage)
+
+{why}
+
+Call `ooda_prompt` with key="{key}" and situation="$ARGUMENTS" (or the active
+loop's situation if no argument). Then run the returned prompt in full.
+
+Record the findings with `ooda_record` at stage "{rec['stage']}" before moving on.
+"""
+        (CODEX_PROMPTS / f"ooda-{slash}.md").write_text(codex, encoding="utf-8")
+
+    print(f"wrote {len(prompts.ORDER) + 1} commands to {CLAUDE_CMDS} and {CODEX_PROMPTS}")
+
 
 if __name__ == "__main__":
     main()

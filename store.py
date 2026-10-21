@@ -1,18 +1,25 @@
 """
 store.py — loop state on disk.
 
-Loops and their stage entries live in a SQLite DB under the plugin data dir
-(plugin_db), which survives `hermes plugins update` / `remove` and follows the
-active profile. Never write state into the plugin install tree.
+Loops and their stage entries live in a SQLite DB. Two homes, in order:
+
+1. Hermes plugin data dir (`plugins.plugin_storage.plugin_db`) when running
+   inside Hermes — survives `hermes plugins update` / `remove`, follows the
+   active profile.
+2. A standalone fallback (`$HERMES_HOME/plugin-data/ooda/`, else `~/.ooda/`)
+   so the MCP server works under Claude Code, Codex, or any other MCP client
+   with no Hermes present.
+
+Never write state into the plugin install tree.
 """
 
 from __future__ import annotations
 
+import os
 import sqlite3
 import uuid
 from datetime import datetime, timezone
-
-from plugins.plugin_storage import plugin_db
+from pathlib import Path
 
 PLUGIN_ID = "ooda"
 STAGES = ["observe", "orient", "decide", "act"]
@@ -42,9 +49,26 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
 
+def _db_path() -> Path:
+    """Resolve the DB path, preferring the Hermes plugin data dir."""
+    try:
+        from plugins.plugin_storage import plugin_data_dir  # type: ignore
+
+        return Path(plugin_data_dir(PLUGIN_ID)) / "data.db"
+    except Exception:
+        pass
+    home = os.environ.get("HERMES_HOME")
+    base = Path(home) / "plugin-data" / PLUGIN_ID if home else Path.home() / ".ooda"
+    base.mkdir(parents=True, exist_ok=True)
+    return base / "data.db"
+
+
 def _conn():
-    conn = plugin_db(PLUGIN_ID)
+    path = _db_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(path, timeout=10)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
     conn.executescript(_SCHEMA)
     conn.commit()
     return conn
